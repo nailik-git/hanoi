@@ -22,7 +22,7 @@ int pop(stack *this) {
 }
 
 typedef struct hanoi {
-  int height;
+  const int height;
   unsigned long int count;
   stack towers[3];
   int (*checkMove)(struct hanoi *this, int from, int to);
@@ -78,20 +78,21 @@ void print(hanoi* h) {
 }
 
 hanoi initialize(int height) {
-  hanoi r;
-  r.height = height;
-  r.count = 0;
-  r.checkMove = checkMove;
-  r.moveWithCheck = moveWithCheck;
-  r.move = move;
-  r.status = status;
-  r.print = print;
+  hanoi r = {
+  .height = height,
+  .count = 0,
+  .checkMove = checkMove,
+  .moveWithCheck = moveWithCheck,
+  .move = move,
+  .status = status,
+  .print = print,
+  };
   for(int i = 0; i < 3; i++) {
     r.towers[i].top = -1; 
     r.towers[i].push = push; 
     r.towers[i].pop = pop;
   }
-  for(int i = height; i > 0; i--) push(&r.towers[0], i);
+  for(int i = height; i > 0; i--) r.towers[0].push(&r.towers[0], i);
   return r;
 }
 

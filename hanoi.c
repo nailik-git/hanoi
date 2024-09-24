@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +24,7 @@ int pop(stack *this) {
 
 typedef struct hanoi {
   int height;
-  int count;
+  unsigned long long int count;
   stack* towers[3];
   int (*checkMove)(struct hanoi *this, int from, int to);
   void (*moveWithCheck)(struct hanoi *this, int from, int to);
@@ -97,7 +98,8 @@ hanoi* initialize(int height) {
 }
 
 void solveIterative(hanoi* h) {
-  const int max = (1 << h->height) - 1;
+  const unsigned long long int one = 1;
+  const unsigned long int max = (one << h->height) - 1;
   while(max >  h->count) {
     const int disk = ffs(h->count + 1);
     const int move_direction = (disk ^ h->height - 1) & 1;

@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +23,7 @@ int pop(stack *this) {
 
 typedef struct hanoi {
   int height;
-  unsigned long long int count;
+  unsigned long int count;
   stack* towers[3];
   int (*checkMove)(struct hanoi *this, int from, int to);
   void (*moveWithCheck)(struct hanoi *this, int from, int to);

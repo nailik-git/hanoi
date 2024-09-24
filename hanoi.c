@@ -122,6 +122,13 @@ void game(hanoi* h) {
   
 }
 
+void end(hanoi *h) {
+  for(int i = 0; i < 3; i++) {
+    free(h->towers[i]);
+  }
+  free(h);
+}
+
 int main(int argc, char** argv) {
   if(argc != 3) {printf("usage: hanoi {user, iterative, recursive} {number of plates}"); return -1;}
   char* output;

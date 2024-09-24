@@ -142,5 +142,7 @@ int main(int argc, char** argv) {
   if(strcmp(argv[1], "recursive") == 0) solveRecursive(h, height, 0, 2, 1);
   h->print(h);
   
+  end(h);
+  
   return 0;
 }

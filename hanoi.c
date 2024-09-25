@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef struct stack {
   int top;
@@ -21,7 +22,7 @@ int pop(stack *this) {
 }
 
 typedef struct hanoi {
-  const int height;
+  const unsigned char height;
   unsigned long int count;
   stack towers[3];
   int (*const checkMove)(struct hanoi *this, int from, int to);
@@ -47,7 +48,7 @@ void moveWithCheck(hanoi* this, int from, int to) {
 }
 
 void move(hanoi* this, int from, int to) {
-  this->count++;
+  // this->count++;
   this->towers[to].push(&this->towers[to], this->towers[from].pop(&this->towers[from]));
 }
 
@@ -76,7 +77,7 @@ void print(hanoi* h) {
   }
 }
 
-hanoi initialize(int height) {
+hanoi initialize(unsigned char height) {
   hanoi r = {
   .height = height,
   .count = 0,
@@ -96,22 +97,26 @@ hanoi initialize(int height) {
 }
 
 void solveIterative(hanoi* h) {
+  const unsigned char height = h->height;
   const unsigned long long int one = 1;
-  const unsigned long int max = (one << h->height) - 1;
-  while(max >  h->count) {
-    const int disk = ffs(h->count + 1);
-    const int move_direction = (disk ^ h->height - 1) & 1;
-    const int from = (h->count >> (disk - move_direction)) % 3;
+  const unsigned long int max = (one << height) - 1;
+  int i = 0;
+  for(; i < max; i++) {
+    const int disk = ffs(i + 1);
+    const int move_direction = (disk ^ height - 1) & 1;
+    const int from = (i >> (disk - move_direction)) % 3;
     h->move(h, from, (from + 1 + move_direction) % 3);  
     //h->print(h);
     //printf("\x1b[%dF", h->height);
   }
+  h->count = i;
 }
 
 void solveRecursive(hanoi* h, int disk, int from, int to, int aux) {
   if(disk == 0) return;
   solveRecursive(h, disk - 1, from, aux, to);
   h->move(h, from, to);
+  h->count++;
   //h->print(h);
   //printf("\x1b[%dF", h->height);
   solveRecursive(h, disk - 1, aux, to, from);
@@ -133,7 +138,7 @@ int main(int argc, char** argv) {
     return -1;
   }
   char* output;
-  int height = (int) strtol(argv[2], &output, 10);
+  unsigned char height = (unsigned char) strtol(argv[2], &output, 10);
   hanoi h = initialize(height);
   h.print(&h);
   printf("\x1b[%dF", height);

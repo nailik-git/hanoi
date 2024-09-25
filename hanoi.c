@@ -15,8 +15,7 @@ void push(stack *this, int disk) {
 }
 
 int pop(stack *this) {
-  int r = this->array[this->top];
-  this->array[this->top] = 0;
+  const int r = this->array[this->top];
   this->top--;
   return r;
 }
@@ -25,11 +24,11 @@ typedef struct hanoi {
   const int height;
   unsigned long int count;
   stack towers[3];
-  int (*checkMove)(struct hanoi *this, int from, int to);
-  void (*moveWithCheck)(struct hanoi *this, int from, int to);
-  void (*move)(struct hanoi *this, int from, int to);
-  int (*status)(struct hanoi *this);
-  void (*print)(struct hanoi *this);
+  int (*const checkMove)(struct hanoi *this, int from, int to);
+  void (*const moveWithCheck)(struct hanoi *this, int from, int to);
+  void (*const move)(struct hanoi *this, int from, int to);
+  int (*const status)(struct hanoi *this);
+  void (*const print)(struct hanoi *this);
 } hanoi;
 
 int checkMove(hanoi* this, int from, int to) {
@@ -118,7 +117,15 @@ void solveRecursive(hanoi* h, int disk, int from, int to, int aux) {
   solveRecursive(h, disk - 1, aux, to, from);
 }
 
-void game(hanoi* h) {}
+void game(hanoi* h) {
+  while(!h->status(h)) {
+    int from;
+    int to;
+    scanf("move disk from tower: %d", &from);
+    scanf(", to tower: %d", &to);
+    h->moveWithCheck(h, from, to);
+  }
+}
 
 int main(int argc, char** argv) {
   if(argc != 3) {
@@ -132,8 +139,12 @@ int main(int argc, char** argv) {
   printf("\x1b[%dF", height);
 
   if(strcmp(argv[1], "user") == 0) game(&h);
-  if(strcmp(argv[1], "iterative") == 0) solveIterative(&h);
-  if(strcmp(argv[1], "recursive") == 0) solveRecursive(&h, height, 0, 2, 1);
+  else if(strcmp(argv[1], "iterative") == 0) solveIterative(&h);
+  else if(strcmp(argv[1], "recursive") == 0) solveRecursive(&h, height, 0, 2, 1);
+  else {
+    printf("usage: hanoi {user, iterative, recursive} {number of plates}\n");
+    return -1;
+  }
   h.print(&h);
   
   return 0;

@@ -97,11 +97,9 @@ hanoi initialize(unsigned char height) {
 
 void solveIterative(hanoi* h) {
   const unsigned char height = h->height;
-  const unsigned long long int one = 1;
-  const unsigned long int max = (one << height) - 1;
   unsigned long int i = 0;
-  for(; i < max; i++) {
-    const int disk = ffs(i + 1);
+  for(; i < 0x7FFFFFFFFFFFFFFFLL; i++) {
+    const int disk = __builtin_ctz(i + 1) + 1;
     const int move_direction = (disk ^ height - 1) & 1;
     const int from = (i >> (disk - move_direction)) % 3;
     h->move(h, from, (from + 1 + move_direction) % 3);  

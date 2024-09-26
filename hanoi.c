@@ -95,6 +95,11 @@ hanoi initialize(unsigned char height) {
   return r;
 }
 
+inline int modLookup(int n) {
+  const int lookup[] = {0, 1, 2, 0, 1};
+  return lookup[n];
+}
+
 void solveIterative(hanoi* h) {
   const unsigned char height = h->height;
   const unsigned long long one = 1;
@@ -104,7 +109,7 @@ void solveIterative(hanoi* h) {
     const int disk = __builtin_ctz(i + 1) + 1;
     const int move_direction = (disk ^ height - 1) & 1;
     const int from = (i >> (disk - move_direction)) % 3;
-    h->move(h, from, (from + 1 + move_direction) % 3);  
+    h->move(h, from, modLookup(from + 1 + move_direction));  
     //h->print(h);
     //printf("\x1b[%dF", h->height);
   }

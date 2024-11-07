@@ -37,6 +37,8 @@ int checkMove(hanoi* this, int from, int to) {
   // checks if a move is legal
   if(from < 0 || from > 2) return 0;
   if(to < 0 || to > 2) return 0;
+  if(this->towers[from].top == -1) return 0;
+  if(this->towers[to].top == -1) return 1;
   const int a = this->towers[from].array[this->towers[from].top];
   const int b = this->towers[to].array[this->towers[to].top];
   if(a > b) return 0;

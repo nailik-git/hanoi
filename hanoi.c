@@ -8,16 +8,16 @@ typedef struct stack {
   int array[64];
 } stack;
 
-void push(stack *this, int disk) {
+void push(stack *s, int disk) {
   // pushes disk onto the stack
-  this->top++;
-  this->array[this->top] = disk;
+  s->top++;
+  s->array[s->top] = disk;
 }
 
-int pop(stack *this) {
+int pop(stack *s) {
   // pops disk from the stack
-  const int r = this->array[this->top];
-  this->top--;
+  const int r = s->array[s->top];
+  s->top--;
   return r;
 }
 
@@ -28,34 +28,34 @@ typedef struct hanoi {
   stack towers[3];
 } hanoi;
 
-int checkMove(hanoi* this, int from, int to) {
+int checkMove(hanoi* h, int from, int to) {
   // checks if a move is legal
   if(from < 0 || from > 2) return 0;
   if(to < 0 || to > 2) return 0;
-  if(this->towers[from].top == -1) return 0;
-  if(this->towers[to].top == -1) return 1;
-  const int a = this->towers[from].array[this->towers[from].top];
-  const int b = this->towers[to].array[this->towers[to].top];
+  if(h->towers[from].top == -1) return 0;
+  if(h->towers[to].top == -1) return 1;
+  const int a = h->towers[from].array[h->towers[from].top];
+  const int b = h->towers[to].array[h->towers[to].top];
   if(a > b) return 0;
   return 1;
 }
 
-void moveWithCheck(hanoi* this, int from, int to) {
+void moveWithCheck(hanoi* h, int from, int to) {
   // moves disk from tower from to tower to and checks the move
-  if(!checkMove(this, from, to)) return;
-  this->count++;
-  push(&this->towers[to], pop(&this->towers[from]));
+  if(!checkMove(h, from, to)) return;
+  h->count++;
+  push(&h->towers[to], pop(&h->towers[from]));
 }
 
-void move(hanoi* this, int from, int to) {
+void move(hanoi* h, int from, int to) {
   // moves disk from tower from to tower to without checking the move
-  // this->count++;
-  push(&this->towers[to], pop(&this->towers[from]));
+  // h->count++;
+  push(&h->towers[to], pop(&h->towers[from]));
 }
 
-int status(hanoi* this) {
+int status(hanoi* h) {
   // returns true if the towers of hanoi are solved
-  return this->towers[1].top + 1 == this->height || this->towers[2].top + 1 == this->height;
+  return h->towers[1].top + 1 == h->height || h->towers[2].top + 1 == h->height;
 }
 
 void print(hanoi* h) {
@@ -110,7 +110,7 @@ void solveIterative(hanoi* h) {
     const int disk = __builtin_ctz(i + 1) + 1; // gray codes method to find the disk to move
     const int move_direction = (disk ^ height - 1) & 1; // 0 or 1, decides wether to move left or right
     const int from = (i >> (disk - move_direction)) % 3; /* determines the tower the disk is currently on
-                                                          * this works somewhat similar to the gray codes,
+                                                          * h works somewhat similar to the gray codes,
                                                           * through how many times we have moved bigger disks 
                                                           * impossible according to wikipedia :) */
     move(h, from, modLookup(from + 1 + move_direction));  
@@ -124,7 +124,7 @@ void solveRecursive(hanoi* h, int disk, int from, int to, int aux) {
   // solves the towers of hanoi recursively
   if(disk == 0) return; // break cond
   solveRecursive(h, disk - 1, from, aux, to); // move bigger disks
-  move(h, from, to); // move this disk
+  move(h, from, to); // move h disk
   h->count++;
   //h->print(h);
   //printf("\x1b[%dF", h->height);

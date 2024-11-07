@@ -6,8 +6,6 @@
 typedef struct stack {
   int top;
   int array[64];
-  void (*push)(struct stack *this, int disk);
-  int (*pop)(struct stack *this);
 } stack;
 
 void push(stack *this, int disk) {
@@ -49,13 +47,13 @@ void moveWithCheck(hanoi* this, int from, int to) {
   // moves disk from tower from to tower to and checks the move
   if(!checkMove(this, from, to)) return;
   this->count++;
-  this->towers[to].push(&this->towers[to], this->towers[from].pop(&this->towers[from]));
+  push(&this->towers[to], pop(&this->towers[from]));
 }
 
 void move(hanoi* this, int from, int to) {
   // moves disk from tower from to tower to without checking the move
   // this->count++;
-  this->towers[to].push(&this->towers[to], this->towers[from].pop(&this->towers[from]));
+  push(&this->towers[to], pop(&this->towers[from]));
 }
 
 int status(hanoi* this) {
@@ -98,10 +96,8 @@ hanoi initialize(unsigned char height) {
   };
   for(int i = 0; i < 3; i++) {
     r.towers[i].top = -1; 
-    r.towers[i].push = push; 
-    r.towers[i].pop = pop;
   }
-  for(int i = height; i > 0; i--) r.towers[0].push(&r.towers[0], i);
+  for(int i = height; i > 0; i--) push(&r.towers[0], i);
   return r;
 }
 

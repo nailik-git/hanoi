@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -103,10 +104,10 @@ void solveIterative(hanoi* h) {
   // solves the towers of hanoi iteratively
   // constants:
   const unsigned char height = h->height;
-  const unsigned long long one = 1;
-  const unsigned long max = (one << height) - 1; // max number of moves needed to solve
-  unsigned long int i = 0; // iterator
-  for(; i < max; i++) {
+  const uint64_t max = 0xFFFFFFFFFFFFFFFF;
+  const uint64_t bound = max >> (64 - height); // max number of moves needed to solve
+  uint64_t i = 0; // iterator
+  for(; i < bound; i++) {
     const int disk = __builtin_ctz(i + 1) + 1; // gray codes method to find the disk to move
     const int move_direction = (disk ^ height - 1) & 1; // 0 or 1, decides wether to move left or right
     const int from = (i >> (disk - move_direction)) % 3; /* determines the tower the disk is currently on
@@ -150,11 +151,12 @@ void game(hanoi* h) {
 
 int main(int argc, char** argv) {
   if(argc != 3) {
-    printf("usage: hanoi {user, iterative, recursive} {number of plates}\n");
+    printf("usage: hanoi {user, iterative, recursive} {number of plates (up to 64)}\n");
     return -1;
   }
   char* output;
   unsigned char height = (unsigned char) strtol(argv[2], &output, 10);
+  if(height > 64) return -1;
   hanoi h = initialize(height);
   print(&h);
   printf("\x1b[%dF", height);

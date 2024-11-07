@@ -26,11 +26,6 @@ typedef struct hanoi {
   const unsigned char height;
   unsigned long int count; // number of steps
   stack towers[3];
-  int (*const checkMove)(struct hanoi *this, int from, int to);
-  void (*const moveWithCheck)(struct hanoi *this, int from, int to);
-  void (*const move)(struct hanoi *this, int from, int to);
-  int (*const status)(struct hanoi *this);
-  void (*const print)(struct hanoi *this);
 } hanoi;
 
 int checkMove(hanoi* this, int from, int to) {
@@ -90,11 +85,6 @@ hanoi initialize(unsigned char height) {
   hanoi r = {
   .height = height,
   .count = 0,
-  .checkMove = checkMove,
-  .moveWithCheck = moveWithCheck,
-  .move = move,
-  .status = status,
-  .print = print,
   };
   for(int i = 0; i < 3; i++) {
     r.towers[i].top = -1; 
@@ -123,7 +113,7 @@ void solveIterative(hanoi* h) {
                                                           * this works somewhat similar to the gray codes,
                                                           * through how many times we have moved bigger disks 
                                                           * impossible according to wikipedia :) */
-    h->move(h, from, modLookup(from + 1 + move_direction));  
+    move(h, from, modLookup(from + 1 + move_direction));  
     //h->print(h);
     //printf("\x1b[%dF", h->height);
   }
@@ -134,7 +124,7 @@ void solveRecursive(hanoi* h, int disk, int from, int to, int aux) {
   // solves the towers of hanoi recursively
   if(disk == 0) return; // break cond
   solveRecursive(h, disk - 1, from, aux, to); // move bigger disks
-  h->move(h, from, to); // move this disk
+  move(h, from, to); // move this disk
   h->count++;
   //h->print(h);
   //printf("\x1b[%dF", h->height);
@@ -143,14 +133,16 @@ void solveRecursive(hanoi* h, int disk, int from, int to, int aux) {
 
 void game(hanoi* h) {
   // user mode to play the towers of hanoi
-  while(!h->status(h)) {
+  while(!status(h)) {
+    print(h); // print the current state
     int from;
     int to;
-    scanf("move disk from tower: %d", &from); // user input to move the disks
-    scanf(", to tower: %d", &to);
-    h->moveWithCheck(h, from, to); // execute move with check
-    h->print(h); // print the current state
-    // printf("\x1b[%dF", h->height); // return cursor to top of the screen
+    printf("move disk from tower: ");
+    scanf("%d", &from); // user input to move the disks
+    printf("to tower: ");
+    scanf("%d", &to);
+    moveWithCheck(h, from, to); // execute move with check
+    printf("\x1b[%dF", h->height + 2); // return cursor to top of the screen
     }
 }
 
@@ -162,7 +154,7 @@ int main(int argc, char** argv) {
   char* output;
   unsigned char height = (unsigned char) strtol(argv[2], &output, 10);
   hanoi h = initialize(height);
-  h.print(&h);
+  print(&h);
   printf("\x1b[%dF", height);
 
   if(strcmp(argv[1], "user") == 0) game(&h);
@@ -172,7 +164,7 @@ int main(int argc, char** argv) {
     printf("usage: hanoi {user, iterative, recursive} {number of plates}\n");
     return -1;
   }
-  h.print(&h);
+  print(&h);
   
   return 0;
 }

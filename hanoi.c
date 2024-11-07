@@ -137,11 +137,13 @@ void game(hanoi* h) {
     print(h); // print the current state
     int from;
     int to;
-    printf("move disk from tower: ");
+    printf("\n                       \n           \x1b[2F");
+    printf("move disk from tower:  ");
+    printf("\b");
     scanf("%d", &from); // user input to move the disks
     printf("to tower: ");
     scanf("%d", &to);
-    moveWithCheck(h, from, to); // execute move with check
+    moveWithCheck(h, --from, --to); // execute move with check
     printf("\x1b[%dF", h->height + 2); // return cursor to top of the screen
     }
 }

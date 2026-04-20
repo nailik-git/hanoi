@@ -2,9 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 // a stack modeled through a bounded array with push and pop functions
-typedef struct stack {
+typedef struct {
   int top;
   int array[64];
 } stack;
@@ -23,10 +24,11 @@ int pop(stack* s) {
 }
 
 // a struct to model the towers of hanoi game
-typedef struct hanoi {
-  const char height;
-  uint64_t count; // number of steps
+typedef struct {
+  const int height;
+  const int sleep;
   stack towers[3];
+  uint64_t count; // number of steps
 } hanoi;
 
 int check_move(hanoi* h, int from, int to) {
@@ -79,25 +81,20 @@ void print(hanoi* h) {
     }
     printf("\n");
   }
+  usleep(h->sleep);
 }
 
-hanoi initialize(char height) {
-  // creates an object of the hanoi struct
-  hanoi r = {
-  .height = height,
-  .count = 0,
-  };
+void initialize(hanoi* h) {
   for(int i = 0; i < 3; i++) {
-    r.towers[i].top = -1; 
+    h->towers[i].top = -1; 
   }
-  for(int i = height; i > 0; i--) push(&r.towers[0], i);
-  return r;
+  for(int i = h->height; i > 0; i--) push(&h->towers[0], i);
 }
 
 void solve_iterative(hanoi* h) {
   // solves the towers of hanoi iteratively
   // constants:
-  const char height = h->height;
+  const int height = h->height;
   const uint64_t max = 0xFFFFFFFFFFFFFFFF;
   const uint64_t bound = max >> (64 - height); // max number of moves needed to solve
 
@@ -105,16 +102,20 @@ void solve_iterative(hanoi* h) {
   const int lookup[5] = {0, 1, 2, 0, 1};
 
   uint64_t i = 0; // iterator
+  #pragma unroll(16)
   for(; i < bound; i++) {
-    const int disk = __builtin_ctz(i + 1) + 1; // gray codes method to find the disk to move
+    const int disk = __builtin_ctzl(i + 1) + 1; // gray codes method to find the disk to move
     const int move_direction = (disk ^ height - 1) & 1; // 0 or 1, decides wether to move left or right
     const int from = (i >> (disk - move_direction)) % 3; /* determines the tower the disk is currently on
                                                           * h works somewhat similar to the gray codes,
                                                           * through how many times we have moved bigger disks 
                                                           * impossible according to wikipedia :) */
     move(h, from, lookup[from + 1 + move_direction]);  
-    //h->print(h);
-    //printf("\x1b[%dF", h->height);
+
+    #ifdef PRINT
+    print(h);
+    printf("\x1b[%dF", h->height);
+    #endif
   }
   h->count = i;
 }
@@ -125,10 +126,12 @@ void solve_recursive(hanoi* h, int disk, int from, int to, int aux) {
   solve_recursive(h, disk - 1, from, aux, to); // move bigger disks
   move(h, from, to); // move h disk
   h->count++;
-  //h->print(h);
-  //printf("\x1b[%dF", h->height);
+  #ifdef PRINT
+  print(h);
+  printf("\x1b[%dF", h->height);
+  #endif
   solve_recursive(h, disk - 1, aux, to, from); // move bigger disks again
-  }
+}
 
 void game(hanoi* h) {
   // user mode to play the towers of hanoi
@@ -144,20 +147,24 @@ void game(hanoi* h) {
     scanf("%d", &to);
     move_with_check(h, --from, --to); // execute move with check
     printf("\x1b[%dF", h->height + 2); // return cursor to top of the screen
-    }
+  }
 }
 
 int main(int argc, char** argv) {
-  if(argc != 3) {
+  if(argc != 3 && argc != 4) {
     printf("usage: hanoi <user|iterative|recursive> <number of plates (less than 64)>\n");
     return -1;
   }
   char* output;
-  char height = (char) strtol(argv[2], &output, 10);
+  const int height = strtol(argv[2], &output, 10);
   if(height > 64) return -1;
-  hanoi h = initialize(height);
+  const int sleep = argc == 4 ? strtol(argv[3], &output, 10) * 1000 : 0;
+  hanoi h = {.height = height, .sleep = sleep, .count = 0};
+  initialize(&h);
+  #ifdef PRINT
   print(&h);
   printf("\x1b[%dF", height);
+  #endif
 
   if(strcmp(argv[1], "user") == 0) game(&h);
   else if(strcmp(argv[1], "iterative") == 0) solve_iterative(&h);
@@ -166,7 +173,9 @@ int main(int argc, char** argv) {
     printf("usage: hanoi {user, iterative, recursive} {number of plates}\n");
     return -1;
   }
+  #ifdef PRINT
   print(&h);
+  #endif
   
   return 0;
 }
